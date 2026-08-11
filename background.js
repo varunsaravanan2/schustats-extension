@@ -183,12 +183,21 @@ async function checkForUpdate() {
     const currentDate = extraction.date;
 
     if (!previousDate) {
-      // First time ever — just record it, no notification, and don't mark
-      // the week as "found" (this is only a baseline, not a detected change).
+      // First time ever — record it as the baseline. If that date itself
+      // falls within the current week, the site has already updated this
+      // week (we just didn't witness the change happen), so mark it found
+      // and pause immediately instead of continuing to check pointlessly.
+      const parsedDate = new Date(currentDate);
+      const alreadyThisWeek =
+        !isNaN(parsedDate) && getWeekKey(parsedDate) === weekKey;
+
       await chrome.storage.local.set({
         lastUpdatedDate: currentDate,
         lastChecked: now,
-        lastStatus: "First check — baseline recorded",
+        lastStatus: alreadyThisWeek
+          ? `First check — baseline recorded (${currentDate} is already this week's update, pausing until Monday)`
+          : "First check — baseline recorded",
+        updateFoundThisWeek: alreadyThisWeek,
       });
       return { ok: true, changed: false, currentDate };
     }
