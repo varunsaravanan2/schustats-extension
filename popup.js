@@ -9,7 +9,6 @@ async function refreshDisplay() {
     "lastUpdatedDate",
     "lastChecked",
     "lastStatus",
-    "lastSnippet",
     "updateFoundThisWeek",
   ]);
   document.getElementById("lastUpdatedDate").textContent =
@@ -22,10 +21,6 @@ async function refreshDisplay() {
     : "";
   document.getElementById("lastStatus").textContent =
     (stored.lastStatus || "—") + weeklyNote;
-  const snippetEl = document.getElementById("lastSnippet");
-  if (snippetEl) {
-    snippetEl.textContent = stored.lastSnippet || "";
-  }
 }
 
 document.getElementById("checkNowBtn").addEventListener("click", () => {

@@ -8,6 +8,7 @@ chrome.runtime.onInstalled.addListener(() => {
   // Record the activation date: today if you enabled this on a Monday,
   // otherwise the upcoming Monday. No checking happens before this date.
   chrome.storage.local.set({ activationDate: getNextMondayKey(new Date()) });
+  chrome.storage.local.remove("lastSnippet"); // leftover from older debug builds
   checkForUpdate();
 });
 
@@ -80,8 +81,6 @@ function extractLastUpdatedFromPage() {
   return {
     found: !!match,
     date: match ? match[1].trim() : null,
-    textLength: text.length,
-    snippet: text.slice(0, 300),
   };
 }
 
@@ -93,8 +92,10 @@ const RELATED_ORIGINS = [
   "https://schustats-default-rtdb.firebaseio.com",
   "https://firestore.googleapis.com",
   "https://content-firebaseappcheck.googleapis.com",
-  "https://www.google.com",
-  "https://www.gstatic.com",
+  // NOTE: deliberately NOT including www.google.com or www.gstatic.com here.
+  // Google stores multi-account sign-in state (e.g. Gmail account switcher)
+  // on the shared google.com domain, so clearing it wipes that too, not
+  // just the reCAPTCHA cookies it was meant to target.
 ];
 
 async function clearSiteData() {
@@ -125,9 +126,10 @@ async function checkForUpdate() {
     await chrome.storage.local.set({ activationDate });
   }
 
+  // Skipped checks don't touch lastChecked — it should only reflect times
+  // the page was actually opened.
   if (todayKey < activationDate) {
     await chrome.storage.local.set({
-      lastChecked: new Date().toISOString(),
       lastStatus: `Not started yet — begins Monday, ${activationDate}`,
     });
     return { ok: true, skipped: true, reason: "not_activated_yet" };
@@ -144,10 +146,7 @@ async function checkForUpdate() {
     await chrome.storage.local.set({ weekKey, updateFoundThisWeek: false });
   } else if (weekState.updateFoundThisWeek) {
     // Already found this week's update — skip checking until next Monday.
-    await chrome.storage.local.set({
-      lastChecked: new Date().toISOString(),
-      lastStatus: "Already found this week's update — waiting until next Monday",
-    });
+    // Leave the stored status alone; the popup adds the "paused" note.
     return { ok: true, skipped: true };
   }
 
@@ -174,8 +173,7 @@ async function checkForUpdate() {
     if (!extraction.found) {
       await chrome.storage.local.set({
         lastChecked: now,
-        lastStatus: `Could not find date text (length: ${extraction.textLength})`,
-        lastSnippet: extraction.snippet,
+        lastStatus: "Could not find the \"Last Updated\" date on the page",
       });
       return { ok: false, reason: "not_found", extraction };
     }
