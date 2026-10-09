@@ -33,10 +33,19 @@ function todayKey() {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+// Formats a Date the way the SchuStats site writes dates, e.g. October 12, 2026.
+function siteDate(d) {
+  return d.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function nextMondayLabel() {
   const d = new Date();
   d.setDate(d.getDate() + (((8 - d.getDay()) % 7) || 7));
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  return siteDate(d);
 }
 
 function setState(kind, text) {
@@ -71,7 +80,8 @@ async function refreshDisplay() {
 
   if (notStarted) {
     setState("waiting", "Not started yet. Checking begins Monday.");
-    nextCheck.textContent = `Monday, ${stored.activationDate}`;
+    const [y, m, d] = stored.activationDate.split("-").map(Number);
+    nextCheck.textContent = `Monday, ${siteDate(new Date(y, m - 1, d))}`;
   } else if (stored.updateFoundThisWeek) {
     setState("found", "Updated this week. Paused until Monday.");
     nextCheck.textContent = `Monday, ${nextMondayLabel()}`;
