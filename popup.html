@@ -3,74 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <style>
+    :root {
+      --bg: #161616;
+      --line: #2a2a2a;
+      --text: #ececec;
+      --muted: #8a8a8a;
+      --accent: #d62c41;
+      --green: #4cc38a;
+      --amber: #e0a43a;
+      --red: #ef5a6b;
+    }
     body {
-      width: 280px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #141414;
-      color: #eee;
-      padding: 16px;
+      width: 290px;
       margin: 0;
+      padding: 14px 16px 12px;
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
-    h1 {
-      font-size: 15px;
-      margin: 0 0 12px 0;
-      color: #d62c41;
-    }
-    .row {
-      margin-bottom: 10px;
-      font-size: 13px;
-    }
-    .label {
-      color: #999;
-      display: block;
-      margin-bottom: 2px;
-    }
-    .value {
-      color: #fff;
+    header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    header img { width: 16px; height: 16px; }
+    #lastUpdatedDate {
+      margin: 14px 0 2px;
+      font-size: 20px;
+      font-weight: 650;
+    }
+    #stateLine {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    #stateLine.found { color: var(--green); }
+    #stateLine.waiting { color: var(--amber); }
+    #stateLine.error { color: var(--red); }
+    dl {
+      margin: 14px 0 0;
+      border-top: 1px solid var(--line);
+    }
+    dl div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    dt { color: var(--muted); flex-shrink: 0; }
+    dd {
+      margin: 0;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    dd .sub { color: var(--muted); }
+    #lastStatus {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: var(--muted);
     }
     button {
       width: 100%;
-      padding: 8px;
-      background: #d62c41;
-      color: white;
+      margin-top: 12px;
+      padding: 7px;
+      background: var(--accent);
+      color: #fff;
       border: none;
-      border-radius: 6px;
-      font-size: 13px;
+      border-radius: 4px;
+      font: inherit;
       font-weight: 600;
       cursor: pointer;
-      margin-top: 8px;
     }
-    button:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
+    button:hover:not(:disabled) { filter: brightness(1.1); }
+    button:disabled { opacity: 0.6; cursor: default; }
     #status {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #999;
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
     }
+    #status:empty { display: none; }
   </style>
 </head>
 <body>
-  <h1>SchuStats Update Monitor</h1>
+  <header>
+    <img src="icons/icon16.png" alt="" />
+    SchuStats Update Monitor
+  </header>
 
-  <div class="row">
-    <span class="label">Last known "Last Updated" date</span>
-    <span class="value" id="lastUpdatedDate">—</span>
-  </div>
+  <div id="lastUpdatedDate">—</div>
+  <div id="stateLine"></div>
 
-  <div class="row">
-    <span class="label">Last checked</span>
-    <span class="value" id="lastChecked">—</span>
-  </div>
+  <dl>
+    <div>
+      <dt>Last checked</dt>
+      <dd><span id="lastCheckedAgo">—</span> <span class="sub" id="lastChecked"></span></dd>
+    </div>
+    <div>
+      <dt>Next check</dt>
+      <dd id="nextCheck">—</dd>
+    </div>
+  </dl>
+  <p id="lastStatus">—</p>
 
-  <div class="row">
-    <span class="label">Status</span>
-    <span class="value" id="lastStatus">—</span>
-  </div>
-
-  <button id="checkNowBtn">Check Now</button>
+  <button id="checkNowBtn">Check now</button>
   <div id="status"></div>
 
   <script src="popup.js"></script>
